@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>Seeker plant system</title>
+<style>
+
+@import url(style.css);
+
+</style>
+
+<script type="text/javascript" src="lib/d3.v2.js"></script>
+<script type="text/javascript" src="lib/cubism.v1.js"></script>
+
+</head>
+<body>
+
+
+<div id="container" class="time-series">
+
+</div>
+
+<select id="step">
+  <option value="1e4">10 seconds</option>
+  <option value="6e4">1 minute</option>
+  <option value="3e5">5 minutes</option>
+</select>
+
+<script>
+
+//
+var step = +cubism.option("step", 1e4);
+
+//
+var context = cubism.context()
+    .step(step)
+    .size(800)
+    .serverDelay(0)
+    .clientDelay(0);
+
+
+//
+var cube = context.cube();
+
+var moistureHeight = 100;
+var moistureExtent = 1023;
+
+
+// Add top and bottom axes to display the time.
+d3.select("#container").selectAll(".axis")
+    .data(["top", "bottom"])
+  .enter().append("div")
+    .attr("class", function(d) { return d + " axis"; })
+    .each(function(d) { d3.select(this).call(context.axis().ticks(12).orient(d)); });
+
+// Add a mouseover rule.
+d3.select("#container").append("div")
+    .attr("class", "rule")
+    .call(context.rule());
+
+//
+d3.json("/1.0/types", function(types) {
+
+  for (var i=types.length-1; i>=0; i--) {
+    if (types[i].indexOf("plant_") == -1) {
+        types.splice(i, 1);
+    }
+  }
+  
+  var horz= d3.select("#container").insert("div", ".bottom")
+    .attr("class", "group")
+    .selectAll(".horizon")
+    .data(types).enter().append("div").attr("class", "multiple-horizons");
+    
+    var n = 1;
+    horz.call(function(div)
+    {
+     // div.text(function(d) { return d;});
+      var hdiv = div.append("div").attr("class", "horizon");
+      hdiv.call(context.horizon().height(moistureHeight).extent([0, moistureExtent]).colors(["#74c476","#31a354","#006d2c"]).title("moisture") //.colors( ["#31a354", "#E9967A"])
+               .metric(function(d) { return cube.metric("1023 - (sum(" + d + "(moisture)) / sum(" + d + "))")}));
+      hdiv.append("span").attr("class", "number").text(function(d) { return d.replace("plant_","#");})
+      
+      div.append("div").attr("class", "horizon")
+         .call(context.horizon().height(30).extent([0, 1]).colors(["#08519c", "#6baed6"]).title("watering") //.colors( ["#31a354", "#E9967A"])
+         .metric(function(d) { return cube.metric("max(" + d + "(watered))")})) ;   
+      });
+});
+
+// On mousemove, reposition the chart values to match the rule.
+context.on("focus", function(i) {
+  d3.selectAll(".value").style("right", i == null ? null : context.size() - i + "px");
+});
+
+// Initialize the step menu's selection.
+d3.selectAll("#step option").property("selected", function() {
+  return this.value == step;
+});
+
+// Update the location on step change.
+d3.select("#step").on("change", function() {
+  window.location = "?step=" + this.value + "&" + location.search.replace(/[?&]step=[^&]*(&|$)/g, "$1").substring(1);
+});
+
+</script>
+
+
+
+
+</body>
+

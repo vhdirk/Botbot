@@ -5,14 +5,14 @@
 ########################################################################
 
 ARDUINO_DIR  := /usr/share/arduino
-ARDUINO_SKETCHBOOK := $(HOME)/development/arduino
+ARDUINO_SKETCHBOOK := $(HOME)/development/arduino/Botbot/arduino
 
 
 TARGET       := botbot
-ARDUINO_LIBS := Time SPI Wire Wire/utility
+ARDUINO_LIBS := Time Ethernet Ethernet/utility aJson SPI Wire Wire/utility
 
-BOARD_TAG    = mega
-ARDUINO_PORT = /dev/ttyUSB0
+BOARD_TAG    = mega2560
+ARDUINO_PORT = /dev/ttyACM0
 
 # forked this from 
 include $(ARDUINO_SKETCHBOOK)/Arduino.mk

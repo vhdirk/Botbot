@@ -1,0 +1,3 @@
+[submodule "arduino/libraries/aJson"]
+	path = arduino/libraries/aJson
+	url = git://github.com/interactive-matter/aJson.git
